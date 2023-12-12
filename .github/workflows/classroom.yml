@@ -64,7 +64,8 @@ jobs:
           docker-compose logs paymentservice
           docker-compose logs carsservice
           docker-compose logs gatewayservice
-          
+
+          chmod +x ./scripts/wait-for.sh
           chmod +x ./scripts/wait-script.sh
           ./scripts/wait-script.sh
         env:
