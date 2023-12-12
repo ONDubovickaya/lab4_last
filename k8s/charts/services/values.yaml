@@ -1,0 +1,33 @@
+#конфигурация для деплоя различных сервисов в контейнерное окружение
+#с использованием Docker
+gateway:
+  service:
+    image: 
+      name: ondubovickaya/rsoi_gatewayservice
+      version: "v1"
+    port: 8080
+    type: "gateway"
+
+car:
+  service:
+    image: 
+        name: ondubovickaya/rsoi_carsservice
+        version: "v1"
+    port: 8070
+    type: "service"
+
+rental:
+  service:
+    image: 
+      name: ondubovickaya/rsoi_rentalservice
+      version: "v1"
+    port: 8060
+    type: "service"
+
+payment:
+  service:
+    image: 
+      name: ondubovickaya/rsoi_paymentservice
+      version: "v1"
+    port: 8050
+    type: "service"
