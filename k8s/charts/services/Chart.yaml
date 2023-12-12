@@ -1,0 +1,24 @@
+#определяем конфигурацию и зависимости сервиса
+#описание его имени, типа, версии и зависимостей от других сервисов
+#используется для настройки и управления микросервисной архитектурой
+#при взаимодействии разных сервисов друг с другом для обеспечения функциональности приложения
+apiVersion: v2
+name: services
+type: application
+version: 1.0.0
+dependencies:
+ - name: service
+   version: 1.0.0
+   alias: gateway
+
+ - name: service
+   version: 1.0.0
+   alias: car
+
+ - name: service
+   version: 1.0.0
+   alias: rental
+
+ - name: service
+   version: 1.0.0
+   alias: payment
