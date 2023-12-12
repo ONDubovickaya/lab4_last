@@ -1,0 +1,10 @@
+#описание ресурсов, выделенных для сервиса с заданным доменом
+domain: "ondubovickaya.ru"
+service:
+  resources:
+    requests:
+      cpu: 200m
+      memory: 512Mi
+    limits:
+      cpu: 200m
+      memory: 512Mi
