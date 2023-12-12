@@ -64,7 +64,9 @@ jobs:
           docker-compose logs paymentservice
           docker-compose logs carsservice
           docker-compose logs gatewayservice
+          
           chmod +x ./scripts/wait-script.sh
+          ./scripts/wait-script.sh
         env:
           WAIT_PORTS: 8080,8070,8060,8050
       
