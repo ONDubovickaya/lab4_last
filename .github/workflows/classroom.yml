@@ -8,6 +8,8 @@ on:
       - master
 jobs:
   build:
+    env:
+      KUBECONFIG: '${{ github.workspace }}/.kube/config'
     name: Autograding
     runs-on: ubuntu-latest
     steps:
@@ -31,6 +33,7 @@ jobs:
           docker-compose build rentalservice
           docker-compose build paymentservice
           docker-compose build carsservice
+      
       - name: Setup db
         run: |
           docker-compose up -d postgres
@@ -85,6 +88,47 @@ jobs:
           delayRequest: 100
           reporters: '[ "cli" ]'
 
+      - name: Install Minikube
+        run: |
+          curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+          sudo install minikube-linux-amd64 /usr/local/bin/minikube
+      
+      - name: Start Minikube
+        run: |
+          minikube start --driver=docker
+          minikube addons enable ingress
+      
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USER }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+      
+      - name: Build and publish images
+        timeout-minutes: 15
+        run: |
+          docker build -t ondubovickaya/rsoi_carsservice:v1 -f app/services/carsService/Dockerfile app/services/carsService
+          docker build -t ondubovickaya/rsoi_gatewayservice:v1 -f app/services/gatewayService/Dockerfile app/services/gatewayService
+          docker build -t ondubovickaya/rsoi_rentalservice:v1 -f app/services/rentalService/Dockerfile app/services/rentalService
+          docker build -t ondubovickaya/rsoi_paymentservice:v1 -f app/services/paymentService/Dockerfile app/services/paymentService
+          
+          docker push ondubovickaya/rsoi_carsservice:v1
+          docker push ondubovickaya/rsoi_gatewayservice:v1
+          docker push ondubovickaya/rsoi_rentalservice:v1
+          docker push ondubovickaya/rsoi_paymentservice:v1
+      
+      - name: Deploy
+        run: |
+          kubectl create deployment cars-service --image=ondubovickaya/rsoi_carsservice:v1 --port=80 --kubeconfig=$KUBECONFIG
+          kubectl create deployment gateway-service --image=ondubovickaya/rsoi_gatewayservice:v1 --port=80 --kubeconfig=$KUBECONFIG
+          kubectl create deployment rental-service --image=ondubovickaya/rsoi_rentalservice:v1 --port=80 --kubeconfig=$KUBECONFIG
+          kubectl create deployment payment-service --image=ondubovickaya/rsoi_paymentservice:v1 --port=80 --kubeconfig=$KUBECONFIG
+          
+          kubectl expose deployment cars-service --type=NodePort --target-port=80 --kubeconfig=$KUBECONFIG
+          kubectl expose deployment gateway-service --type=NodePort --target-port=80 --kubeconfig=$KUBECONFIG
+          kubectl expose deployment rental-service --type=NodePort --target-port=80 --kubeconfig=$KUBECONFIG
+          kubectl expose deployment payment-service --type=NodePort --target-port=80 --kubeconfig=$KUBECONFIG
+      
       #- uses: education/autograding@v1
        # id: autograder
        # continue-on-error: true
