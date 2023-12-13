@@ -117,7 +117,7 @@ jobs:
           docker push ondubovickaya/rsoi_rentalservice:v1
           docker push ondubovickaya/rsoi_paymentservice:v1
       
-      - name: Deploy
+      - name: Deploy services
         run: |
           kubectl create deployment cars-service --image=ondubovickaya/rsoi_carsservice:v1 --port=80 --kubeconfig=$KUBECONFIG
           kubectl create deployment gateway-service --image=ondubovickaya/rsoi_gatewayservice:v1 --port=80 --kubeconfig=$KUBECONFIG
@@ -128,6 +128,12 @@ jobs:
           kubectl expose deployment gateway-service --type=NodePort --target-port=80 --kubeconfig=$KUBECONFIG
           kubectl expose deployment rental-service --type=NodePort --target-port=80 --kubeconfig=$KUBECONFIG
           kubectl expose deployment payment-service --type=NodePort --target-port=80 --kubeconfig=$KUBECONFIG
+      
+      - name: Deploy database
+        run: |
+          # Deploying database using Helm chart
+          helm repo add bitnami https://charts.bitnami.com/bitnami
+          helm install my-database bitnami/postgresql –set postgresqlDatabase=my-database –kubeconfig=$KUBECONFIG
       
       #- uses: education/autograding@v1
        # id: autograder
