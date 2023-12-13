@@ -123,10 +123,10 @@ jobs:
           kubectl expose deployment payment-service --type=NodePort --target-port=80 --kubeconfig=$KUBECONFIG
           kubectl expose deployment gateway-service --type=NodePort --target-port=80 --kubeconfig=$KUBECONFIG
 
-          kubect set env deployment/cars-service DATABASE_HOST=cars-database DATABASE_NAME=cars-database --kubeconfig=$KUBECONFIG
-          kubect set env deployment/cars-service DATABASE_HOST=payments-database DATABASE_NAME=payments-database --kubeconfig=$KUBECONFIG
-          kubect set env deployment/cars-service DATABASE_HOST=rentals-database DATABASE_NAME=rentals-database --kubeconfig=$KUBECONFIG
-          kubect set env deployment/cars-service DATABASE_HOST=gateway-database DATABASE_NAME=gateway-database --kubeconfig=$KUBECONFIG
+          kubectl set env deployment/cars-service DATABASE_HOST=cars-database DATABASE_NAME=cars-database --kubeconfig=$KUBECONFIG
+          kubectl set env deployment/cars-service DATABASE_HOST=payments-database DATABASE_NAME=payments-database --kubeconfig=$KUBECONFIG
+          kubectl set env deployment/cars-service DATABASE_HOST=rentals-database DATABASE_NAME=rentals-database --kubeconfig=$KUBECONFIG
+          kubectl set env deployment/cars-service DATABASE_HOST=gateway-database DATABASE_NAME=gateway-database --kubeconfig=$KUBECONFIG
       
       #- uses: education/autograding@v1
        # id: autograder
