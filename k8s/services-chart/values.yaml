@@ -7,7 +7,7 @@ gateway:
       version: "v1"
     port: 8080
     type: "gateway"
-
+    isGateway: true
 car:
   service:
     image: 
@@ -15,7 +15,8 @@ car:
         version: "v1"
     port: 8070
     type: "service"
-
+    database:
+        name: cars
 rental:
   service:
     image: 
@@ -23,7 +24,8 @@ rental:
       version: "v1"
     port: 8060
     type: "service"
-
+    database:
+        name: rentals
 payment:
   service:
     image: 
@@ -31,3 +33,5 @@ payment:
       version: "v1"
     port: 8050
     type: "service"
+    database:
+        name: payments
