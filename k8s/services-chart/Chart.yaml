@@ -7,18 +7,15 @@ name: services
 type: application
 version: 1.0.0
 dependencies:
- - name: service
+ - name: service-chart
    version: 1.0.0
    alias: gateway
-
- - name: service
+ - name: service-chart
    version: 1.0.0
    alias: car
-
- - name: service
+ - name: service-chart
    version: 1.0.0
    alias: rental
-
- - name: service
+ - name: service-chart
    version: 1.0.0
    alias: payment
