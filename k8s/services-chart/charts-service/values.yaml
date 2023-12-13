@@ -1,6 +1,8 @@
 #описание ресурсов, выделенных для сервиса с заданным доменом
 domain: "ondubovickaya.ru"
 service:
+  port: 8080
+  isGateway:
   resources:
     requests:
       cpu: 200m
