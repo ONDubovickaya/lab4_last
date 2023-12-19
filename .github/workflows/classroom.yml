@@ -65,14 +65,14 @@ jobs:
         with:
           time: '15s'
           
-      - name: Run API Tests
-        uses: matt-ball/newman-action@master
-        with:
+      #- name: Run API Tests
+        #uses: matt-ball/newman-action@master
+        #with:
           # TODO insert your variant
-          collection: v3/postman/collection.json
-          environment: v3/postman/environment.json
-          delayRequest: 100
-          reporters: '[ "cli" ]'
+          #collection: v3/postman/collection.json
+          #environment: v3/postman/environment.json
+          #delayRequest: 100
+          #reporters: '[ "cli" ]'
 
       - name: Install Minikube
         run: |
@@ -129,6 +129,48 @@ jobs:
           kubectl set env deployment/cars-service DATABASE_HOST=gateway-database DATABASE_NAME=gateway-database --kubeconfig=$KUBECONFIG
 
           kubectl get services
+
+      - name: Get cars-service host and port
+        run: |
+          echo "::set-output name=CARS_SERVICE_HOST::$(minikube service cars-service --url --no-browser | awk -F / '{print $3}' | awk -F : '{print $1}')"
+          echo "::set-output name=CARS_SERVICE_PORT::$(minikube service cars-service --url --no-browser | awk -F : '{print $NF}')"
+
+      - name: Get rental-service host and port
+        run: |
+          echo "::set-output name=RENTAL_SERVICE_HOST::$(minikube service rental-service --url --no-browser | awk -F / '{print $3}' | awk -F : '{print $1}')"
+          echo "::set-output name=RENTAL_SERVICE_PORT::$(minikube service rental-service --url --no-browser | awk -F : '{print $NF}')"
+
+      - name: Get payment-service host and port
+        run: |
+          echo "::set-output name=PAYMENT_SERVICE_HOST::$(minikube service payment-service --url --no-browser | awk -F / '{print $3}' | awk -F : '{print $1}')"
+          echo "::set-output name=PAYMENT_SERVICE_PORT::$(minikube service payment-service --url --no-browser | awk -F : '{print $NF}')"
+
+      - name: Get gateway-service host and port
+        run: |
+          echo "::set-output name=GATEWAY_SERVICE_HOST::$(minikube service gateway-service --url --no-browser | awk -F / '{print $3}' | awk -F : '{print $1}')"
+          echo "::set-output name=GATEWAY_SERVICE_PORT::$(minikube service gateway-service --url --no-browser | awk -F : '{print $NF}')"
+
+      #- name: Run API Tests
+        #uses: matt-ball/newman-action@master
+        #with:
+          # TODO insert your variant
+          #collection: v3/postman/collection.json
+          #environment: v3/postman/environment.json
+          #delayRequest: 100
+          #reporters: '[ "cli" ]'
+      
+      - name: Get URLs
+        id: get_urls
+        run: |
+          CAR_SERVICE_URL=$(minikube service cars-service --url)
+          RENTAL_SERVICE_URL=$(minikube service rental-service --url)
+          PAYMENT_SERVICE_URL=$(minikube service payment-service --url)
+          GATEWAY_SERVICE_URL=$(minikube service gateway-service --url)
+        env:
+          CAR_SERVICE_URL: ${{ steps.get_urls.outputs.CAR_SERVICE_URL }}
+          RENTAL_SERVICE_URL: ${{ steps.get_urls.outputs.RENTAL_SERVICE_URL }}
+          PAYMENT_SERVICE_URL: ${{ steps.get_urls.outputs.PAYMENT_SERVICE_URL }}
+          GATEWAY_SERVICE_URL: ${{ steps.get_urls.outputs.GATEWAY_SERVICE_URL }}
 
       #- uses: education/autograding@v1
        # id: autograder
