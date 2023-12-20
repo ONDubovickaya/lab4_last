@@ -1,0 +1,23 @@
+# Default values for cars_system.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+gateway:
+  service:
+    image: ondubovickaya/api-gateway:latest
+    port: 8080
+
+rental:
+  service:
+    image: ondubovickaya/rental-service:latest
+    port: 8060
+
+payments:
+  service:
+    image: ondubovickaya/payments-service:latest
+    port: 8050
+
+cars:
+  service:
+    image: ondubovickaya/cars-service:latest
+    port: 8070
