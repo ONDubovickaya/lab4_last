@@ -8,8 +8,8 @@ on:
       - master
 jobs:
   build:
-    env:
-      KUBECONFIG: '${{ github.workspace }}/.kube/config'
+    #env:
+      #KUBECONFIG: '${{ github.workspace }}/.kube/config'
     name: Autograding
     runs-on: ubuntu-latest
     steps:
@@ -60,29 +60,29 @@ jobs:
         env:
           WAIT_PORTS: 8080,8070,8060,8050
       
-      - name: Wait 15s
-        uses: jakejarvis/wait-action@master
-        with:
-          time: '15s'
-          
-      #- name: Run API Tests
-        #uses: matt-ball/newman-action@master
+      #- name: Wait 15s
+        #uses: jakejarvis/wait-action@master
         #with:
+          #time: '15s'
+          
+      - name: Run API Tests
+        uses: matt-ball/newman-action@master
+        with:
           # TODO insert your variant
-          #collection: v3/postman/collection.json
-          #environment: v3/postman/environment.json
-          #delayRequest: 100
-          #reporters: '[ "cli" ]'
+          collection: v3/postman/collection.json
+          environment: v3/postman/environment.json
+          delayRequest: 100
+          reporters: '[ "cli" ]'
 
-      - name: Install Minikube
-        run: |
-          curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
-          sudo install minikube-linux-amd64 /usr/local/bin/minikube
+      #- name: Install Minikube
+        #run: |
+          #curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+          #sudo install minikube-linux-amd64 /usr/local/bin/minikube
       
-      - name: Start Minikube
-        run: |
-          minikube start --driver=docker
-          minikube addons enable ingress
+      #- name: Start Minikube
+        #run: |
+          #minikube start --driver=docker
+          #minikube addons enable ingress
       
       - name: Login to Docker Hub
         uses: docker/login-action@v2
@@ -93,36 +93,36 @@ jobs:
       - name: Build and publish images
         timeout-minutes: 15
         run: |
-          docker build -t ondubovickaya/rsoi_carsservice:v1 -f app/services/carsService/Dockerfile app/services/carsService
-          docker build -t ondubovickaya/rsoi_gatewayservice:v1 -f app/services/gatewayService/Dockerfile app/services/gatewayService
-          docker build -t ondubovickaya/rsoi_rentalservice:v1 -f app/services/rentalService/Dockerfile app/services/rentalService
-          docker build -t ondubovickaya/rsoi_paymentservice:v1 -f app/services/paymentService/Dockerfile app/services/paymentService
+          docker build -t ondubovickaya/cars-service -f app/services/carsService/Dockerfile app/services/carsService
+          docker build -t ondubovickaya/api-gateway -f app/services/gatewayService/Dockerfile app/services/gatewayService
+          docker build -t ondubovickaya/rental-service -f app/services/rentalService/Dockerfile app/services/rentalService
+          docker build -t ondubovickaya/payments-service -f app/services/paymentService/Dockerfile app/services/paymentService
           
-          docker push ondubovickaya/rsoi_carsservice:v1
-          docker push ondubovickaya/rsoi_gatewayservice:v1
-          docker push ondubovickaya/rsoi_rentalservice:v1
-          docker push ondubovickaya/rsoi_paymentservice:v1
+          docker push ondubovickaya/cars-service
+          docker push ondubovickaya/api-gateway
+          docker push ondubovickaya/rental-service
+          docker push ondubovickaya/payments-service
       
-      - name: Write out the kubeconfig info
-        env:
-          MY_SECRET: $KUBECONFIG
-        run: |
-          echo "$MY_SECRET" | base64 -d >> /tmp/config
-          chmod 0600 /tmp/config
+      #- name: Write out the kubeconfig info
+        #env:
+          #MY_SECRET: $KUBECONFIG
+        #run: |
+          #echo "$MY_SECRET" | base64 -d >> /tmp/config
+          #chmod 0600 /tmp/config
 
       - name: Instal deps
         run: curl -sSL https://hub.mcs.mail.ru/repository/client-keystone-auth/latest/linux/client-install.sh | bash
 
       - name: Deploy DB
         env:
-          KUBECONFIG: /tmp/config
+          KUBECONFIG: '${{ github.workspace }}/.kube/config'
         run: |
           source ~/vk-cloud-solutions/path.bash.inc
           helm upgrade --install postgres ./kubernetes/postgres
       
       - name: Deploy API
         env:
-          KUBECONFIG: /tmp/config
+          KUBECONFIG: '${{ github.workspace }}/.kube/config'
         run: |
           source ~/vk-cloud-solutions/path.bash.inc
           helm upgrade --install cars ./kubernetes/cars
