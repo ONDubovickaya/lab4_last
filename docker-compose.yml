@@ -21,6 +21,7 @@ services:
       retries: 2
 
   carsservice:
+    image: ondubovickaya/cars-service
     build: app/services/carsService
     container_name: carsservice
     depends_on:
@@ -36,6 +37,7 @@ services:
       - "8070:8070"
 
   paymentservice:
+    image: ondubovickaya/payments-service
     build: app/services/paymentService
     container_name: paymentservice
     depends_on:
@@ -51,6 +53,7 @@ services:
       - "8050:8050"
 
   rentalservice:
+    image: ondubovickaya/rental-service
     build: app/services/rentalService
     container_name: rentalservice
     depends_on:
@@ -66,6 +69,7 @@ services:
       - "8060:8060"
 
   gatewayservice:
+    image: ondubovickaya/api-gateway
     build: app/services/gatewayService
     container_name: gatewayservice
     depends_on:
