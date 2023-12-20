@@ -103,52 +103,57 @@ jobs:
           docker push ondubovickaya/rsoi_rentalservice:v1
           docker push ondubovickaya/rsoi_paymentservice:v1
       
-      - name: Deploy database
+      - name: Write out the kubeconfig info
+        env:
+          MY_SECRET: $KUBECONFIG
         run: |
-          helm repo add bitnami https://charts.bitnami.com/bitnami
-          helm install cars-database bitnami/postgresql --set postgresqlDatabase=cars-database --kubeconfig=$KUBECONFIG
-          helm install payments-database bitnami/postgresql --set postgresqlDatabase=payments-database --kubeconfig=$KUBECONFIG
-          helm install rentals-database bitnami/postgresql --set postgresqlDatabase=rentals-database --kubeconfig=$KUBECONFIG
-          helm install gateway-database bitnami/postgresql --set postgresqlDatabase=gateway-database --kubeconfig=$KUBECONFIG
+          echo "$MY_SECRET" | base64 -d >> /tmp/config
+          chmod 0600 /tmp/config
+
+      - name: Instal deps
+        run: curl -sSL https://hub.mcs.mail.ru/repository/client-keystone-auth/latest/linux/client-install.sh | bash
+
+      - name: Deploy DB
+        env:
+          KUBECONFIG: /tmp/config
+        run: |
+          source ~/vk-cloud-solutions/path.bash.inc
+          helm upgrade --install postgres ./kubernetes/postgres
       
-      - name: Deploy services
+      - name: Deploy API
+        env:
+          KUBECONFIG: /tmp/config
         run: |
-          kubectl create deployment cars-service --image=ondubovickaya/rsoi_carsservice:v1 --port=80 --kubeconfig=$KUBECONFIG
-          kubectl create deployment rental-service --image=ondubovickaya/rsoi_rentalservice:v1 --port=80 --kubeconfig=$KUBECONFIG
-          kubectl create deployment payment-service --image=ondubovickaya/rsoi_paymentservice:v1 --port=80 --kubeconfig=$KUBECONFIG
-          kubectl create deployment gateway-service --image=ondubovickaya/rsoi_gatewayservice:v1 --port=80 --kubeconfig=$KUBECONFIG
+          source ~/vk-cloud-solutions/path.bash.inc
+          helm upgrade --install cars ./kubernetes/cars
+          kubectl apply -f ./kubernetes/ingress.yaml
+      
+      #- name: Deploy database
+        #run: |
+          #helm repo add bitnami https://charts.bitnami.com/bitnami
+          #helm install cars-database bitnami/postgresql --set postgresqlDatabase=cars-database --kubeconfig=$KUBECONFIG
+          #helm install payments-database bitnami/postgresql --set postgresqlDatabase=payments-database --kubeconfig=$KUBECONFIG
+          #helm install rentals-database bitnami/postgresql --set postgresqlDatabase=rentals-database --kubeconfig=$KUBECONFIG
+          #helm install gateway-database bitnami/postgresql --set postgresqlDatabase=gateway-database --kubeconfig=$KUBECONFIG
+      
+      #- name: Deploy services
+        #run: |
+          #kubectl create deployment cars-service --image=ondubovickaya/rsoi_carsservice:v1 --port=80 --kubeconfig=$KUBECONFIG
+          #kubectl create deployment rental-service --image=ondubovickaya/rsoi_rentalservice:v1 --port=80 --kubeconfig=$KUBECONFIG
+          #kubectl create deployment payment-service --image=ondubovickaya/rsoi_paymentservice:v1 --port=80 --kubeconfig=$KUBECONFIG
+          #kubectl create deployment gateway-service --image=ondubovickaya/rsoi_gatewayservice:v1 --port=80 --kubeconfig=$KUBECONFIG
           
-          kubectl expose deployment cars-service --type=NodePort --target-port=80 --kubeconfig=$KUBECONFIG
-          kubectl expose deployment rental-service --type=NodePort --target-port=80 --kubeconfig=$KUBECONFIG
-          kubectl expose deployment payment-service --type=NodePort --target-port=80 --kubeconfig=$KUBECONFIG
-          kubectl expose deployment gateway-service --type=NodePort --target-port=80 --kubeconfig=$KUBECONFIG
+          #kubectl expose deployment cars-service --type=NodePort --target-port=80 --kubeconfig=$KUBECONFIG
+          #kubectl expose deployment rental-service --type=NodePort --target-port=80 --kubeconfig=$KUBECONFIG
+          #kubectl expose deployment payment-service --type=NodePort --target-port=80 --kubeconfig=$KUBECONFIG
+          #kubectl expose deployment gateway-service --type=NodePort --target-port=80 --kubeconfig=$KUBECONFIG
 
-          kubectl set env deployment/cars-service DATABASE_HOST=cars-database DATABASE_NAME=cars-database --kubeconfig=$KUBECONFIG
-          kubectl set env deployment/cars-service DATABASE_HOST=payments-database DATABASE_NAME=payments-database --kubeconfig=$KUBECONFIG
-          kubectl set env deployment/cars-service DATABASE_HOST=rentals-database DATABASE_NAME=rentals-database --kubeconfig=$KUBECONFIG
-          kubectl set env deployment/cars-service DATABASE_HOST=gateway-database DATABASE_NAME=gateway-database --kubeconfig=$KUBECONFIG
+          #kubectl set env deployment/cars-service DATABASE_HOST=cars-database DATABASE_NAME=cars-database --kubeconfig=$KUBECONFIG
+          #kubectl set env deployment/cars-service DATABASE_HOST=payments-database DATABASE_NAME=payments-database --kubeconfig=$KUBECONFIG
+          #kubectl set env deployment/cars-service DATABASE_HOST=rentals-database DATABASE_NAME=rentals-database --kubeconfig=$KUBECONFIG
+          #kubectl set env deployment/cars-service DATABASE_HOST=gateway-database DATABASE_NAME=gateway-database --kubeconfig=$KUBECONFIG
 
-          kubectl get services
-
-      - name: Get cars-service host and port
-        run: |
-          echo "::set-output name=CARS_SERVICE_HOST::$(minikube service cars-service --url --no-browser | awk -F / '{print $3}' | awk -F : '{print $1}')"
-          echo "::set-output name=CARS_SERVICE_PORT::$(minikube service cars-service --url --no-browser | awk -F : '{print $NF}')"
-
-      - name: Get rental-service host and port
-        run: |
-          echo "::set-output name=RENTAL_SERVICE_HOST::$(minikube service rental-service --url --no-browser | awk -F / '{print $3}' | awk -F : '{print $1}')"
-          echo "::set-output name=RENTAL_SERVICE_PORT::$(minikube service rental-service --url --no-browser | awk -F : '{print $NF}')"
-
-      - name: Get payment-service host and port
-        run: |
-          echo "::set-output name=PAYMENT_SERVICE_HOST::$(minikube service payment-service --url --no-browser | awk -F / '{print $3}' | awk -F : '{print $1}')"
-          echo "::set-output name=PAYMENT_SERVICE_PORT::$(minikube service payment-service --url --no-browser | awk -F : '{print $NF}')"
-
-      - name: Get gateway-service host and port
-        run: |
-          echo "::set-output name=GATEWAY_SERVICE_HOST::$(minikube service gateway-service --url --no-browser | awk -F / '{print $3}' | awk -F : '{print $1}')"
-          echo "::set-output name=GATEWAY_SERVICE_PORT::$(minikube service gateway-service --url --no-browser | awk -F : '{print $NF}')"
+          #kubectl get services
 
       #- name: Run API Tests
         #uses: matt-ball/newman-action@master
@@ -158,19 +163,6 @@ jobs:
           #environment: v3/postman/environment.json
           #delayRequest: 100
           #reporters: '[ "cli" ]'
-      
-      - name: Get URLs
-        id: get_urls
-        run: |
-          CAR_SERVICE_URL=$(minikube service cars-service --url)
-          RENTAL_SERVICE_URL=$(minikube service rental-service --url)
-          PAYMENT_SERVICE_URL=$(minikube service payment-service --url)
-          GATEWAY_SERVICE_URL=$(minikube service gateway-service --url)
-        env:
-          CAR_SERVICE_URL: ${{ steps.get_urls.outputs.CAR_SERVICE_URL }}
-          RENTAL_SERVICE_URL: ${{ steps.get_urls.outputs.RENTAL_SERVICE_URL }}
-          PAYMENT_SERVICE_URL: ${{ steps.get_urls.outputs.PAYMENT_SERVICE_URL }}
-          GATEWAY_SERVICE_URL: ${{ steps.get_urls.outputs.GATEWAY_SERVICE_URL }}
 
       #- uses: education/autograding@v1
        # id: autograder
